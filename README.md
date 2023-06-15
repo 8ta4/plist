@@ -29,7 +29,7 @@ cd plist
 
 1. First things first, open up your terminal and run this command:
 
-   ```
+   ```bash
    plist
    ```
 
@@ -39,7 +39,7 @@ cd plist
 
 3. After you've made some changes, you'll see commands like these in the tool's output:
 
-   ```
+   ```bash
    /usr/libexec/PlistBuddy -c "Set :tilesize 36" ~/Library/Preferences/com.apple.dock.plist
    /usr/libexec/PlistBuddy -c "Set :orientation left" ~/Library/Preferences/com.apple.dock.plist
    ```
