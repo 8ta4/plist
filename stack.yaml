@@ -30,7 +30,7 @@ resolver:
 #   - auto-update
 #   - wai
 packages:
-- .
+  - .
 # Dependency packages to be pulled from upstream that are not in the resolver.
 # These entries can reference officially published versions as well as
 # forks / in-progress versions pinned to a git hash. For example:
@@ -65,3 +65,6 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+
+# https://www.reddit.com/r/haskell/comments/uk5wg7/comment/i7n990t/?utm_source=reddit&utm_medium=web2x&context=3#:~:text=try%20installing%20ghc-9.0.2%20with%20ghcup%20and%20adding%20the%20line%20system-ghc%3A%20true%20to%20your%20stack.yaml.
+system-ghc: true

@@ -4,3 +4,6 @@ devenv.local.nix
 
 .stack-work/
 *~
+
+# pre-commit
+.pre-commit-config.yaml

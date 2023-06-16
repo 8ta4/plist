@@ -1,14 +1,14 @@
-name:                plist
-version:             0.1.0.0
-github:              "githubuser/plist"
-license:             BSD3
-author:              "Author name here"
-maintainer:          "example@example.com"
-copyright:           "2023 Author name here"
+name: plist
+version: 0.1.0.0
+github: "githubuser/plist"
+license: BSD3
+author: "Author name here"
+maintainer: "example@example.com"
+copyright: "2023 Author name here"
 
 extra-source-files:
-- README.md
-- CHANGELOG.md
+  - README.md
+  - CHANGELOG.md
 
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
@@ -17,43 +17,76 @@ extra-source-files:
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/githubuser/plist#readme>
+description: Please see the README on GitHub at <https://github.com/githubuser/plist#readme>
 
 dependencies:
-- base >= 4.7 && < 5
+  - base >= 4.7 && < 5
+  - process
 
 ghc-options:
-- -Wall
-- -Wcompat
-- -Widentities
-- -Wincomplete-record-updates
-- -Wincomplete-uni-patterns
-- -Wmissing-export-lists
-- -Wmissing-home-modules
-- -Wpartial-fields
-- -Wredundant-constraints
+  - -Wall
+  - -Wcompat
+  - -Widentities
+  - -Wincomplete-record-updates
+  - -Wincomplete-uni-patterns
+  - -Wmissing-export-lists
+  - -Wmissing-home-modules
+  - -Wpartial-fields
+  - -Wredundant-constraints
+
+# https://github.com/purescript/purescript/blob/9166355079a65288855b623f010c0a0b7a479b2e/purescript.cabal#L63-L92
+default-extensions:
+  - BangPatterns
+  - ConstraintKinds
+  - DataKinds
+  - DefaultSignatures
+  - DeriveFunctor
+  - DeriveFoldable
+  - DeriveTraversable
+  - DeriveGeneric
+  - DerivingStrategies
+  - DerivingVia
+  - EmptyDataDecls
+  - FlexibleContexts
+  - FlexibleInstances
+  - GeneralizedNewtypeDeriving
+  - KindSignatures
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NamedFieldPuns
+  - NoImplicitPrelude
+  - PatternGuards
+  - PatternSynonyms
+  - RankNTypes
+  - RecordWildCards
+  - OverloadedRecordDot
+  - OverloadedStrings
+  - ScopedTypeVariables
+  - TupleSections
+  - TypeFamilies
+  - ViewPatterns
 
 library:
   source-dirs: src
 
 executables:
   plist-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - plist
+      - plist
 
 tests:
   plist-test:
-    main:                Spec.hs
-    source-dirs:         test
+    main: Spec.hs
+    source-dirs: test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - plist
+      - plist
