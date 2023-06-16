@@ -30,6 +30,36 @@ library
       Paths_plist
   hs-source-dirs:
       src
+  default-extensions:
+      BangPatterns
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveFunctor
+      DeriveFoldable
+      DeriveTraversable
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      EmptyDataDecls
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoImplicitPrelude
+      PatternGuards
+      PatternSynonyms
+      RankNTypes
+      RecordWildCards
+      OverloadedRecordDot
+      OverloadedStrings
+      ScopedTypeVariables
+      TupleSections
+      TypeFamilies
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
@@ -41,6 +71,36 @@ executable plist-exe
       Paths_plist
   hs-source-dirs:
       app
+  default-extensions:
+      BangPatterns
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveFunctor
+      DeriveFoldable
+      DeriveTraversable
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      EmptyDataDecls
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoImplicitPrelude
+      PatternGuards
+      PatternSynonyms
+      RankNTypes
+      RecordWildCards
+      OverloadedRecordDot
+      OverloadedStrings
+      ScopedTypeVariables
+      TupleSections
+      TypeFamilies
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -54,6 +114,36 @@ test-suite plist-test
       Paths_plist
   hs-source-dirs:
       test
+  default-extensions:
+      BangPatterns
+      ConstraintKinds
+      DataKinds
+      DefaultSignatures
+      DeriveFunctor
+      DeriveFoldable
+      DeriveTraversable
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      EmptyDataDecls
+      FlexibleContexts
+      FlexibleInstances
+      GeneralizedNewtypeDeriving
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NamedFieldPuns
+      NoImplicitPrelude
+      PatternGuards
+      PatternSynonyms
+      RankNTypes
+      RecordWildCards
+      OverloadedRecordDot
+      OverloadedStrings
+      ScopedTypeVariables
+      TupleSections
+      TypeFamilies
+      ViewPatterns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

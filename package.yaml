@@ -33,6 +33,37 @@ ghc-options:
 - -Wpartial-fields
 - -Wredundant-constraints
 
+default-extensions:
+- BangPatterns
+- ConstraintKinds
+- DataKinds
+- DefaultSignatures
+- DeriveFunctor
+- DeriveFoldable
+- DeriveTraversable
+- DeriveGeneric
+- DerivingStrategies
+- DerivingVia
+- EmptyDataDecls
+- FlexibleContexts
+- FlexibleInstances
+- GeneralizedNewtypeDeriving
+- KindSignatures
+- LambdaCase
+- MultiParamTypeClasses
+- NamedFieldPuns
+- NoImplicitPrelude
+- PatternGuards
+- PatternSynonyms
+- RankNTypes
+- RecordWildCards
+- OverloadedRecordDot
+- OverloadedStrings
+- ScopedTypeVariables
+- TupleSections
+- TypeFamilies
+- ViewPatterns
+
 library:
   source-dirs: src
 
