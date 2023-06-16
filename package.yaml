@@ -33,6 +33,7 @@ ghc-options:
   - -Wpartial-fields
   - -Wredundant-constraints
 
+# https://github.com/purescript/purescript/blob/9166355079a65288855b623f010c0a0b7a479b2e/purescript.cabal#L63-L92
 default-extensions:
   - BangPatterns
   - ConstraintKinds
