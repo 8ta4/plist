@@ -22,3 +22,4 @@ jobs:
         shell: sh
       - run: devenv ci
       - run: devenv shell echo ok
+      - run: devenv shell build
