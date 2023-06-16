@@ -12,6 +12,9 @@
   ];
 
   # https://devenv.sh/scripts/
+  scripts.build.exec = ''
+    ${pkgs.haskellPackages.stack}/bin/stack build --fast
+  '';
   scripts.hello.exec = "echo hello from $GREET";
   scripts.run.exec = ''
     ${pkgs.ghcid}/bin/ghcid --command="${pkgs.stack}/bin/stack ghci" -T="main" --warnings
