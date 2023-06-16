@@ -1,0 +1,6 @@
+# Devenv
+.devenv*
+devenv.local.nix
+
+.stack-work/
+*~
