@@ -5,12 +5,14 @@ import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
+import Data.Text.Lazy (fromStrict)
 import GHC.IO.Handle (hGetLine)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcessWithExitCode)
+import Text.XML (Document, def, parseText)
 import Prelude
 
-type PlistCache = Cache FilePath T.Text
+type PlistCache = Cache FilePath Document
 
 main :: IO ()
 main = do
@@ -29,20 +31,25 @@ printPlistFile cache path = do
   (exitCode, currentContents) <- callPlistBuddy "Print" path
   case exitCode of
     ExitSuccess -> do
-      case previousContents of
-        Just _ -> do
-          -- Update the cache with the new contents
-          insert cache path currentContents
-        Nothing -> do
-          -- Add the file to the cache without generating PlistBuddy commands
-          insert cache path currentContents
-      return ()
+      case parseText def (fromStrict currentContents) of
+        Right doc -> do
+          case previousContents of
+            Just _ -> do
+              -- Update the cache with the new contents
+              insert cache path doc
+            Nothing -> do
+              -- Add the file to the cache without generating PlistBuddy commands
+              insert cache path doc
+          return ()
+        Left err -> do
+          TIO.putStrLn $ "Error parsing plist file: " <> T.pack path <> " - " <> T.pack (show err)
+          return ()
     _ -> do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> currentContents
       return ()
 
 callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy command path = do
-  let plistBuddyArgs = ["-c", command, path]
+  let plistBuddyArgs = ["-x", "-c", command, path]
   (exitCode, output, _) <- readProcessWithExitCode "/usr/libexec/PlistBuddy" plistBuddyArgs ""
   return (exitCode, T.pack output)

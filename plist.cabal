@@ -68,6 +68,7 @@ library
     , hashable
     , process
     , text
+    , xml-conduit
   default-language: Haskell2010
 
 executable plist-exe
@@ -115,6 +116,7 @@ executable plist-exe
     , plist
     , process
     , text
+    , xml-conduit
   default-language: Haskell2010
 
 test-suite plist-test
@@ -163,4 +165,5 @@ test-suite plist-test
     , plist
     , process
     , text
+    , xml-conduit
   default-language: Haskell2010
