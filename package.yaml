@@ -21,7 +21,10 @@ description: Please see the README on GitHub at <https://github.com/githubuser/p
 
 dependencies:
   - base >= 4.7 && < 5
+  - cache
+  - hashable
   - process
+  - text
 
 ghc-options:
   - -Wall
