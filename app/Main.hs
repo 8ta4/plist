@@ -43,6 +43,6 @@ printPlistFile cache path = do
 
 callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy command path = do
-  let plistBuddyArgs = ["-c", command, path]
+  let plistBuddyArgs = ["-x", "-c", command, path]
   (exitCode, output, _) <- readProcessWithExitCode "/usr/libexec/PlistBuddy" plistBuddyArgs ""
   return (exitCode, T.pack output)
