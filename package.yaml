@@ -37,7 +37,7 @@ ghc-options:
   - -Wpartial-fields
   - -Wredundant-constraints
 
-# https://github.com/purescript/purescript/blob/9166355079a65288855b623f010c0a0b7a479b2e/purescript.cabal#L63-L92
+# https://github.com/purescript/purescript/blob/0d337102b30f35f793d33d0293228790e0e71d2f/purescript.cabal#L90-L120
 default-extensions:
   - BangPatterns
   - ConstraintKinds
@@ -53,6 +53,7 @@ default-extensions:
   - FlexibleContexts
   - FlexibleInstances
   - GeneralizedNewtypeDeriving
+  - ImportQualifiedPost
   - KindSignatures
   - LambdaCase
   - MultiParamTypeClasses

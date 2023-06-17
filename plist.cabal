@@ -45,6 +45,7 @@ library
       FlexibleContexts
       FlexibleInstances
       GeneralizedNewtypeDeriving
+      ImportQualifiedPost
       KindSignatures
       LambdaCase
       MultiParamTypeClasses
@@ -90,6 +91,7 @@ executable plist-exe
       FlexibleContexts
       FlexibleInstances
       GeneralizedNewtypeDeriving
+      ImportQualifiedPost
       KindSignatures
       LambdaCase
       MultiParamTypeClasses
@@ -137,6 +139,7 @@ test-suite plist-test
       FlexibleContexts
       FlexibleInstances
       GeneralizedNewtypeDeriving
+      ImportQualifiedPost
       KindSignatures
       LambdaCase
       MultiParamTypeClasses

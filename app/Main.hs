@@ -2,9 +2,9 @@ module Main (main) where
 
 import Control.Monad (forever)
 import Data.Cache (Cache, insert, newCache)
-import qualified Data.Cache as Cache
-import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
+import Data.Cache qualified as Cache
+import Data.Text qualified as T
+import Data.Text.IO qualified as TIO
 import GHC.IO.Handle (hGetLine)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcessWithExitCode)
