@@ -1,9 +1,7 @@
-module Lib
-  ( someFunc,
-  )
-where
+module Lib (convertPlistToHashMap) where
 
-import Prelude
+import Data.HashMap.Lazy qualified as HashMap
+import Data.Text (Text)
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+convertPlistToHashMap :: Text -> HashMap.HashMap Text Text
+convertPlistToHashMap _ = HashMap.empty

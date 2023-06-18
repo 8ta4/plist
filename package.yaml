@@ -25,6 +25,7 @@ dependencies:
   - hashable
   - process
   - text
+  - unordered-containers
   - xml-conduit
 
 ghc-options:
@@ -94,4 +95,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - hspec
       - plist
