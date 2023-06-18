@@ -1,6 +1,6 @@
 import Data.HashMap.Strict qualified as HashMap
-import Data.Text qualified as T
 import Data.Text.IO qualified as TIO
+import Lib (convertPlistToHashMap)
 import Test.Hspec (describe, hspec, it, shouldBe)
 import Prelude
 
@@ -13,7 +13,7 @@ main = hspec $ do
 
   describe "convertPlistToHashMap" $ do
     it "returns a HashMap for a given plist XML" $ do
-      _ <- TIO.readFile "test/sample.xml"
-      let result = HashMap.empty :: HashMap.HashMap T.Text T.Text
+      sample <- TIO.readFile "test/sample.xml"
+      let result = convertPlistToHashMap sample
       let expected = HashMap.fromList [("Key1", "Value1"), ("Key2", "Value2")]
       result `shouldBe` expected
