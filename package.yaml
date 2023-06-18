@@ -25,6 +25,7 @@ dependencies:
   - hashable
   - process
   - text
+  - unordered-containers
   - xml-conduit
 
 ghc-options:
