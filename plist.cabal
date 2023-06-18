@@ -162,6 +162,7 @@ test-suite plist-test
       base >=4.7 && <5
     , cache
     , hashable
+    , hspec
     , plist
     , process
     , text

@@ -94,4 +94,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
+      - hspec
       - plist
