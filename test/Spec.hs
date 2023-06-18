@@ -1,3 +1,5 @@
+module Spec (main) where
+
 import Data.HashMap.Strict qualified as HashMap
 import Data.Text.IO qualified as TIO
 import Lib (convertPlistToHashMap)

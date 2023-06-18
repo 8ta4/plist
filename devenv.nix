@@ -19,6 +19,9 @@
   scripts.run.exec = ''
     ${pkgs.ghcid}/bin/ghcid --command="${pkgs.stack}/bin/stack ghci" -T="main" --warnings
   '';
+  scripts.check.exec = ''
+    ${pkgs.ghcid}/bin/ghcid --command="${pkgs.stack}/bin/stack ghci plist:lib plist:plist-test" --test "main" --warnings
+  '';
 
   enterShell = ''
     hello
