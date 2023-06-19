@@ -1,0 +1,10 @@
+{
+  "name": "plist",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:illnessmerit/plist.git",
+  "license": "MIT",
+  "dependencies": {
+    "plist": "^3.0.6"
+  }
+}
