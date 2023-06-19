@@ -9,6 +9,7 @@
     pkgs.fswatch
     pkgs.git
     pkgs.ghcid
+    pkgs.yarn
   ];
 
   # https://devenv.sh/scripts/
