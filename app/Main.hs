@@ -1,16 +1,22 @@
 module Main (main) where
 
 import Control.Monad (forever)
+import Data.Aeson (Object, decode)
+import Data.ByteString.Lazy (fromStrict)
 import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
+import Data.HashMap.Strict (HashMap)
+import Data.HashMap.Strict qualified as HashMap
+import Data.Text (Text)
 import Data.Text qualified as T
+import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import GHC.IO.Handle (hGetLine)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
 import Prelude
 
-type PlistCache = Cache FilePath T.Text
+type PlistCache = Cache FilePath (HashMap T.Text T.Text)
 
 main :: IO ()
 main = do
@@ -48,5 +54,10 @@ callPlistBuddy command path = do
   (exitCode, output, _) <- readProcessWithExitCode "/usr/libexec/PlistBuddy" plistBuddyArgs ""
   return (exitCode, T.pack output)
 
-convertPlistToJSON :: T.Text -> IO T.Text
-convertPlistToJSON xmlInput = T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
+convertPlistToJSON :: T.Text -> IO (HashMap Text Text)
+convertPlistToJSON xmlInput = do
+  jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
+  case decode (fromStrict $ encodeUtf8 jsonString) :: Maybe Object of
+    -- TODO: flatten the object
+    Just _ -> return HashMap.empty
+    Nothing -> return HashMap.empty
