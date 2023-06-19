@@ -17,5 +17,5 @@ main = hspec $ do
     it "returns a HashMap for a given plist XML" $ do
       sample <- TIO.readFile "test/sample.xml"
       let result = convertPlistToHashMap sample
-      let expected = HashMap.fromList [("Key1", "Value1"), ("Key2", "Value2")]
+      let expected = HashMap.fromList [(":Key1", "Value1"), (":Key2", "42")]
       result `shouldBe` expected

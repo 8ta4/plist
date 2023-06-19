@@ -5,6 +5,6 @@
     <key>Key1</key>
     <string>Value1</string>
     <key>Key2</key>
-    <string>Value2</string>
+    <integer>42</integer>
   </dict>
 </plist>
