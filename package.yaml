@@ -97,3 +97,4 @@ tests:
       - -with-rtsopts=-N
     dependencies:
       - plist
+      - hspec
