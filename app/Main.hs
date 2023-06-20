@@ -7,7 +7,6 @@ import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
-import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
@@ -54,7 +53,7 @@ callPlistBuddy command path = do
   (exitCode, output, _) <- readProcessWithExitCode "/usr/libexec/PlistBuddy" plistBuddyArgs ""
   return (exitCode, T.pack output)
 
-convertPlistToJSON :: T.Text -> IO (HashMap Text Text)
+convertPlistToJSON :: T.Text -> IO (HashMap T.Text T.Text)
 convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) :: Maybe Object of
