@@ -1,9 +1,7 @@
-module Lib
-  ( someFunc,
-  )
-where
+module Lib (flattenJSON) where
 
+import Data.Aeson (Value)
 import Prelude
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+flattenJSON :: Value -> Value
+flattenJSON = undefined
