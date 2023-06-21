@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Control.Monad (forever)
+import Control.Monad (forever, when)
 import Data.Aeson (decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
@@ -38,7 +38,17 @@ printPlistFile cache path = do
     ExitSuccess -> do
       currentContents <- convertPlistToJSON xmlData
       case previousContents of
-        Just _ -> do
+        Just oldContents -> do
+          -- Find the updated keys
+          let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
+          -- Generate and print the Set commands for the updated keys with changes
+          mapM_
+            ( \key ->
+                let oldValue = oldContents HashMap.! key
+                    newValue = currentContents HashMap.! key
+                 in (when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path)
+            )
+            updatedKeys
           -- Update the cache with the new contents
           insert cache path currentContents
         Nothing -> do
@@ -61,3 +71,7 @@ convertPlistToJSON xmlInput = do
   case decode (fromStrict $ encodeUtf8 jsonString) of
     Just obj -> return $ T.pack . show <$> toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
+
+generateSetCommand :: T.Text -> T.Text -> T.Text -> T.Text
+generateSetCommand key value path =
+  "/usr/libexec/PlistBuddy -c \"Set " <> key <> " " <> value <> "\"" <> " " <> path
