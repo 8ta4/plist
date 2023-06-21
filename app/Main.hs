@@ -42,13 +42,7 @@ printPlistFile cache path = do
           -- Find the updated keys
           let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
           -- Generate and print the Set commands for the updated keys with changes
-          mapM_
-            ( \key ->
-                let oldValue = oldContents HashMap.! key
-                    newValue = currentContents HashMap.! key
-                 in (when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path)
-            )
-            updatedKeys
+          mapM_ (printSetCommand oldContents currentContents path) updatedKeys
           -- Update the cache with the new contents
           insert cache path currentContents
         Nothing -> do
@@ -58,6 +52,12 @@ printPlistFile cache path = do
     _ -> do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
+
+printSetCommand :: HashMap T.Text T.Text -> HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
+printSetCommand oldContents currentContents path key =
+  let oldValue = oldContents HashMap.! key
+      newValue = currentContents HashMap.! key
+   in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
 
 callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy command path = do
