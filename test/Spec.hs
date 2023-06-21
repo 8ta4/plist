@@ -16,8 +16,8 @@ main = hspec $ do
     it "flattens a nested JSON object with concatenated keys using colon delimiter" $ do
       let inputJSON = "{\"a\": {\"b\": 1, \"c\": {\"d\": 2}}}"
           expectedJSON = "{\"a:b\": 1, \"a:c:d\": 2}"
-          input = decode (BL.pack inputJSON) :: Maybe Object
-          expected = decode (BL.pack expectedJSON) :: Maybe Object
+          input = decode (BL.pack inputJSON)
+          expected = decode (BL.pack expectedJSON)
       case (input, expected) of
         (Just inputObj, Just expectedObj) ->
           flattenObject inputObj `shouldBe` expectedObj
