@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Control.Monad (forever)
-import Data.Aeson (Object, decode)
+import Data.Aeson (decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
 import Data.Cache (Cache, insert, newCache)
