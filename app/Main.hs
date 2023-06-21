@@ -59,10 +59,13 @@ printPlistFile cache path = do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
 
+plistBuddyPath :: T.Text
+plistBuddyPath = "/usr/libexec/PlistBuddy"
+
 callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy command path = do
   let plistBuddyArgs = ["-x", "-c", command, path]
-  (exitCode, output, _) <- readProcessWithExitCode "/usr/libexec/PlistBuddy" plistBuddyArgs ""
+  (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
 
 convertPlistToJSON :: T.Text -> IO (HashMap T.Text T.Text)
@@ -89,12 +92,12 @@ printDeleteCommand path key =
 
 generateAddCommand :: T.Text -> T.Text -> T.Text -> T.Text
 generateAddCommand key value path =
-  "/usr/libexec/PlistBuddy -c \"Add " <> key <> " " <> value <> "\"" <> " " <> path
+  plistBuddyPath <> " -c \"Add " <> key <> " " <> value <> "\" " <> path
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
-  "/usr/libexec/PlistBuddy -c \"Delete " <> key <> "\"" <> " " <> path
+  plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
 
 generateSetCommand :: T.Text -> T.Text -> T.Text -> T.Text
 generateSetCommand key value path =
-  "/usr/libexec/PlistBuddy -c \"Set " <> key <> " " <> value <> "\"" <> " " <> path
+  plistBuddyPath <> " -c \"Set " <> key <> " " <> value <> "\" " <> path
