@@ -39,10 +39,16 @@ printPlistFile cache path = do
       currentContents <- convertPlistToJSON xmlData
       case previousContents of
         Just oldContents -> do
-          -- Find the updated keys
+          -- Find the updated, added, and deleted keys
           let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
-          -- Generate and print the Set commands for the updated keys with changes
+          let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
+          let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
+
+          -- Generate and print the Set, Add, and Delete commands
           mapM_ (printSetCommand oldContents currentContents path) updatedKeys
+          mapM_ (printAddCommand currentContents path) addedKeys
+          mapM_ (printDeleteCommand path) deletedKeys
+
           -- Update the cache with the new contents
           insert cache path currentContents
         Nothing -> do
@@ -52,12 +58,6 @@ printPlistFile cache path = do
     _ -> do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
-
-printSetCommand :: HashMap T.Text T.Text -> HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key =
-  let oldValue = oldContents HashMap.! key
-      newValue = currentContents HashMap.! key
-   in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
 
 callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy command path = do
@@ -71,6 +71,29 @@ convertPlistToJSON xmlInput = do
   case decode (fromStrict $ encodeUtf8 jsonString) of
     Just obj -> return $ T.pack . unpack . encode <$> toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
+
+printSetCommand :: HashMap T.Text T.Text -> HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
+printSetCommand oldContents currentContents path key =
+  let oldValue = oldContents HashMap.! key
+      newValue = currentContents HashMap.! key
+   in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
+
+printAddCommand :: HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
+printAddCommand currentContents path key = do
+  let value = currentContents HashMap.! key
+  TIO.putStrLn $ generateAddCommand key value $ T.pack path
+
+printDeleteCommand :: FilePath -> T.Text -> IO ()
+printDeleteCommand path key =
+  TIO.putStrLn $ generateDeleteCommand key $ T.pack path
+
+generateAddCommand :: T.Text -> T.Text -> T.Text -> T.Text
+generateAddCommand key value path =
+  "/usr/libexec/PlistBuddy -c \"Add " <> key <> " " <> value <> "\"" <> " " <> path
+
+generateDeleteCommand :: T.Text -> T.Text -> T.Text
+generateDeleteCommand key path =
+  "/usr/libexec/PlistBuddy -c \"Delete " <> key <> "\"" <> " " <> path
 
 generateSetCommand :: T.Text -> T.Text -> T.Text -> T.Text
 generateSetCommand key value path =
