@@ -2,7 +2,7 @@ module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, when)
-import Data.Aeson (decode, encode)
+import Data.Aeson (Value, decode, encode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
 import Data.ByteString.Lazy.Char8 (unpack)
@@ -19,7 +19,7 @@ import System.Exit (ExitCode (..))
 import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
 import Prelude
 
-type PlistCache = Cache FilePath (HashMap T.Text T.Text)
+type PlistCache = Cache FilePath (HashMap T.Text Value)
 
 main :: IO ()
 main = do
@@ -75,20 +75,20 @@ callPlistBuddy command path = do
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
 
-convertPlistToJSON :: T.Text -> IO (HashMap T.Text T.Text)
+convertPlistToJSON :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) of
-    Just obj -> return $ T.pack . unpack . encode <$> toHashMapText (flattenObject obj)
+    Just obj -> return $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
 
-printSetCommand :: HashMap T.Text T.Text -> HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
+printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
 printSetCommand oldContents currentContents path key =
   let oldValue = oldContents HashMap.! key
       newValue = currentContents HashMap.! key
    in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
 
-printAddCommand :: HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
+printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
 printAddCommand currentContents path key =
   let value = currentContents HashMap.! key
    in TIO.putStrLn $ generateAddCommand key value $ T.pack path
@@ -97,14 +97,14 @@ printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
 
-generateAddCommand :: T.Text -> T.Text -> T.Text -> T.Text
+generateAddCommand :: T.Text -> Value -> T.Text -> T.Text
 generateAddCommand key value path =
-  plistBuddyPath <> " -c \"Add " <> key <> " " <> value <> "\" " <> path
+  plistBuddyPath <> " -c \"Add " <> key <> " " <> T.pack (unpack (encode value)) <> "\" " <> path
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
   plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
 
-generateSetCommand :: T.Text -> T.Text -> T.Text -> T.Text
+generateSetCommand :: T.Text -> Value -> T.Text -> T.Text
 generateSetCommand key value path =
-  plistBuddyPath <> " -c \"Set " <> key <> " " <> value <> "\" " <> path
+  plistBuddyPath <> " -c \"Set " <> key <> " " <> T.pack (unpack (encode value)) <> "\" " <> path
