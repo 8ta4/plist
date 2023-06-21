@@ -58,7 +58,6 @@ callPlistBuddy command path = do
 convertPlistToJSON :: T.Text -> IO (HashMap T.Text T.Text)
 convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
-  case decode (fromStrict $ encodeUtf8 jsonString) :: Maybe Object of
-    -- TODO: flatten the object
+  case decode (fromStrict $ encodeUtf8 jsonString) of
     Just obj -> return $ T.pack . show <$> toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
