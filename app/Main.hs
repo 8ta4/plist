@@ -1,9 +1,10 @@
 module Main (main) where
 
 import Control.Monad (forever, when)
-import Data.Aeson (decode)
+import Data.Aeson (decode, encode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
+import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
@@ -31,7 +32,6 @@ main = do
 
 printPlistFile :: PlistCache -> FilePath -> IO ()
 printPlistFile cache path = do
-  putStrLn $ "Plist file changed: " ++ path
   previousContents <- Cache.lookup cache path
   (exitCode, xmlData) <- callPlistBuddy "Print" path
   case exitCode of
@@ -69,7 +69,7 @@ convertPlistToJSON :: T.Text -> IO (HashMap T.Text T.Text)
 convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) of
-    Just obj -> return $ T.pack . show <$> toHashMapText (flattenObject obj)
+    Just obj -> return $ T.pack . unpack . encode <$> toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
 
 generateSetCommand :: T.Text -> T.Text -> T.Text -> T.Text
