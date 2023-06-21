@@ -1,5 +1,6 @@
 module Main (main) where
 
+import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, when)
 import Data.Aeson (decode, encode)
 import Data.Aeson.KeyMap (toHashMapText)
@@ -26,6 +27,12 @@ main = do
   plistCache <- newCache Nothing :: IO PlistCache
   let fswatchArgs = ["-r", "--include=.*\\.plist$", "--exclude=.*", "/"]
   (_, Just hout, _, _) <- createProcess (proc "fswatch" fswatchArgs) {std_out = CreatePipe}
+
+  -- Create a separate thread to call `defaults read` every 0.1s
+  -- We want to call `defaults read` periodically because it forces plist files to reflect any changes made to them.
+  _ <- forkIO $ forever $ do
+    _ <- readProcess "defaults" ["read"] ""
+    threadDelay 100000 -- 0.1s in microseconds
   forever $ do
     path <- hGetLine hout
     printPlistFile plistCache path
