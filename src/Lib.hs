@@ -1,12 +1,6 @@
-module Lib (flattenJSON) where
+module Lib (flattenObject) where
 
-import Data.Aeson (Object, Value (..))
-import Data.Text (Text)
-import Prelude
+import Data.Aeson (Object)
 
-flattenJSON :: Value -> Value
-flattenJSON (Object obj) = Object $ flattenObject obj ""
-flattenJSON val = val
-
-flattenObject :: Object -> Text -> Object
-flattenObject obj prefix = obj
+flattenObject :: Object -> Object
+flattenObject obj = obj
