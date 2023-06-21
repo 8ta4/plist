@@ -2,6 +2,7 @@ module Main (main) where
 
 import Control.Monad (forever)
 import Data.Aeson (Object, decode)
+import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
 import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
@@ -11,6 +12,7 @@ import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import GHC.IO.Handle (hGetLine)
+import Lib (flattenObject)
 import System.Exit (ExitCode (..))
 import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
 import Prelude
@@ -58,5 +60,5 @@ convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) :: Maybe Object of
     -- TODO: flatten the object
-    Just _ -> return HashMap.empty
+    Just obj -> return $ T.pack . show <$> toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
