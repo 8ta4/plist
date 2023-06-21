@@ -1,6 +1,6 @@
 module Spec (main) where
 
-import Data.Aeson (Object, decode)
+import Data.Aeson (decode)
 import Data.ByteString.Lazy.Char8 qualified as BL
 import Lib (flattenObject)
 import Test.Hspec (describe, hspec, it, shouldBe)
@@ -12,7 +12,7 @@ main = hspec $ do
   describe "Prelude.head" $ do
     it "returns the first element of a list" $ do
       head [23 ..] `shouldBe` (23 :: Int)
-  describe "flattenJSON" $ do
+  describe "flattenObject" $ do
     it "flattens a nested JSON object with concatenated keys using colon delimiter" $ do
       let inputJSON = "{\"a\": {\"b\": 1, \"c\": {\"d\": 2}}}"
           expectedJSON = "{\":a:b\": 1, \":a:c:d\": 2}"
