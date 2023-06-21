@@ -79,9 +79,9 @@ printSetCommand oldContents currentContents path key =
    in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
 
 printAddCommand :: HashMap T.Text T.Text -> FilePath -> T.Text -> IO ()
-printAddCommand currentContents path key = do
+printAddCommand currentContents path key =
   let value = currentContents HashMap.! key
-  TIO.putStrLn $ generateAddCommand key value $ T.pack path
+   in TIO.putStrLn $ generateAddCommand key value $ T.pack path
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
