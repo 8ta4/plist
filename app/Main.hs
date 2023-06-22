@@ -1,7 +1,7 @@
 module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
-import Control.Monad (forever, when)
+import Control.Monad (forever)
 import Data.Aeson (Value, decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
@@ -47,13 +47,15 @@ printPlistFile cache path = do
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
-          -- TODO: Filter updatedKeys to only include keys whose values have changed
-          let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
+          let updatedKeys =
+                filter
+                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
           let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
           let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
 
           -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printSetCommand oldContents currentContents path) updatedKeys
+          mapM_ (printSetCommand path) updatedKeys
           mapM_ (printAddCommand path) addedKeys
           mapM_ (printDeleteCommand path) deletedKeys
 
@@ -92,13 +94,10 @@ printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
 
-printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key = do
-  let oldValue = oldContents HashMap.! key
-      newValue = currentContents HashMap.! key
-  when (oldValue /= newValue) $ do
-    setCommand <- generateSetCommand key $ T.pack path
-    TIO.putStrLn setCommand
+printSetCommand :: FilePath -> T.Text -> IO ()
+printSetCommand path key = do
+  setCommand <- generateSetCommand key $ T.pack path
+  TIO.putStrLn setCommand
 
 generateAddCommand :: T.Text -> T.Text -> IO T.Text
 generateAddCommand key path = do
