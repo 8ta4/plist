@@ -23,7 +23,6 @@ type PlistCache = Cache FilePath (HashMap T.Text Value)
 
 main :: IO ()
 main = do
-  putStrLn "Watching plist files..."
   plistCache <- newCache Nothing :: IO PlistCache
   let fswatchArgs = ["-r", "--include=.*\\.plist$", "--exclude=.*", "/"]
   (_, Just hout, _, _) <- createProcess (proc "fswatch" fswatchArgs) {std_out = CreatePipe}
@@ -65,9 +64,7 @@ printPlistFile cache path = do
           -- Add the file to the cache without generating PlistBuddy commands
           insert cache path currentContents
       return ()
-    _ -> do
-      TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
-      return ()
+    _ -> return ()
 
 callPlistBuddy :: Bool -> T.Text -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy useXML command path = do
@@ -93,8 +90,7 @@ printAddCommand path key = do
       xmlOutput <- callPlistBuddy True ("Print " <> key) path
       valueType <- getValueType (snd xmlOutput)
       TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> T.pack path
-    _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key
+    _ -> return ()
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
@@ -105,7 +101,7 @@ printSetCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   case exitCode of
     ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> T.pack path
-    _ -> putStrLn $ "Error getting current value for key: " <> T.unpack key
+    _ -> return ()
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
