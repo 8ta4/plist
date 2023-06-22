@@ -40,7 +40,7 @@ main = do
 printPlistFile :: PlistCache -> FilePath -> IO ()
 printPlistFile cache path = do
   previousContents <- Cache.lookup cache path
-  (exitCode, xmlData) <- callPlistBuddy "Print" path
+  (exitCode, xmlData) <- callPlistBuddy True "Print" path
   case exitCode of
     ExitSuccess -> do
       currentContents <- convertPlistToJSON xmlData
@@ -69,15 +69,9 @@ printPlistFile cache path = do
 plistBuddyPath :: T.Text
 plistBuddyPath = "/usr/libexec/PlistBuddy"
 
-callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
-callPlistBuddy command path = do
-  let plistBuddyArgs = ["-x", "-c", command, path]
-  (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
-  return (exitCode, T.pack output)
-
-callPlistBuddy' :: String -> FilePath -> IO (ExitCode, T.Text)
-callPlistBuddy' command path = do
-  let plistBuddyArgs = ["-c", command, path]
+callPlistBuddy :: Bool -> String -> FilePath -> IO (ExitCode, T.Text)
+callPlistBuddy useXML command path = do
+  let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", command, path]
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
 
@@ -125,7 +119,7 @@ generateDeleteCommand key path =
 
 generateSetCommand :: T.Text -> T.Text -> IO T.Text
 generateSetCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy' ("Print " <> T.unpack key) (T.unpack path)
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> T.unpack key) (T.unpack path)
   case exitCode of
     ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
     _ -> do
