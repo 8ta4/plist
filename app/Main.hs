@@ -2,10 +2,9 @@ module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, when)
-import Data.Aeson (Value (Bool, Number, String), decode, encode)
+import Data.Aeson (Value (Bool, Number, String), decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
-import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
@@ -91,9 +90,10 @@ printSetCommand oldContents currentContents path key = do
     TIO.putStrLn setCommand
 
 printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printAddCommand currentContents path key =
+printAddCommand currentContents path key = do
   let value = currentContents HashMap.! key
-   in TIO.putStrLn $ generateAddCommand key value $ T.pack path
+  addCommand <- generateAddCommand key value $ T.pack path
+  TIO.putStrLn addCommand
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
@@ -107,11 +107,16 @@ valueTypeString value =
     (Bool _) -> "bool"
     _ -> "unknown"
 
-generateAddCommand :: T.Text -> Value -> T.Text -> T.Text
-generateAddCommand key value path =
-  let valueType = T.pack $ valueTypeString value
-      valueText = T.pack (unpack (encode value))
-   in plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> valueText <> "\" " <> path
+generateAddCommand :: T.Text -> Value -> T.Text -> IO T.Text
+generateAddCommand key value path = do
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> T.unpack key) (T.unpack path)
+  case exitCode of
+    ExitSuccess -> do
+      let valueType = T.pack $ valueTypeString value
+      return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
+    _ -> do
+      putStrLn $ "Error getting current value for key: " <> T.unpack key <> " - " <> T.unpack currentValue
+      return ""
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
