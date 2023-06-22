@@ -23,7 +23,6 @@ type PlistCache = Cache FilePath (HashMap T.Text Value)
 
 main :: IO ()
 main = do
-  putStrLn "Watching plist files..."
   plistCache <- newCache Nothing :: IO PlistCache
   let fswatchArgs = ["-r", "--include=.*\\.plist$", "--exclude=.*", "/"]
   (_, Just hout, _, _) <- createProcess (proc "fswatch" fswatchArgs) {std_out = CreatePipe}
@@ -65,9 +64,7 @@ printPlistFile cache path = do
           -- Add the file to the cache without generating PlistBuddy commands
           insert cache path currentContents
       return ()
-    _ -> do
-      TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
-      return ()
+    _ -> return ()
 
 callPlistBuddy :: Bool -> T.Text -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy useXML command path = do
@@ -87,29 +84,24 @@ convertPlistToJSON xmlInput = do
 
 printAddCommand :: FilePath -> T.Text -> IO ()
 printAddCommand path key = do
-  addCommand <- generateAddCommand key $ T.pack path
-  TIO.putStrLn addCommand
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
+  case exitCode of
+    ExitSuccess -> do
+      xmlOutput <- callPlistBuddy True ("Print " <> key) path
+      valueType <- getValueType (snd xmlOutput)
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> T.pack path
+    _ -> return ()
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
-  TIO.putStrLn $ generateDeleteCommand key $ T.pack path
+  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> T.pack path
 
 printSetCommand :: FilePath -> T.Text -> IO ()
 printSetCommand path key = do
-  setCommand <- generateSetCommand key $ T.pack path
-  TIO.putStrLn setCommand
-
-generateAddCommand :: T.Text -> T.Text -> IO T.Text
-generateAddCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   case exitCode of
-    ExitSuccess -> do
-      xmlOutput <- callPlistBuddy True ("Print " <> key) (T.unpack path)
-      valueType <- getValueType (snd xmlOutput)
-      return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
-    _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key
-      return ""
+    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> T.pack path
+    _ -> return ()
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
@@ -121,16 +113,3 @@ getValueType xmlInput = do
   if output == "true" || output == "false"
     then return "bool"
     else return output
-
-generateDeleteCommand :: T.Text -> T.Text -> T.Text
-generateDeleteCommand key path =
-  plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
-
-generateSetCommand :: T.Text -> T.Text -> IO T.Text
-generateSetCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
-  case exitCode of
-    ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
-    _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key
-      return ""
