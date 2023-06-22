@@ -12,11 +12,11 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
-import GHC.IO.Handle (hGetLine)
+import GHC.IO.Handle (hGetContents, hGetLine)
 import Lib (flattenObject)
 import System.Exit (ExitCode (..))
-import System.IO (hClose, hPutStr, openTempFile)
-import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
+import System.IO (hClose, hPutStrLn)
+import System.Process (CreateProcess (std_in, std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
 import Prelude
 
 type PlistCache = Cache FilePath (HashMap T.Text Value)
@@ -114,12 +114,11 @@ generateAddCommand key path = do
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
-  -- TODO: Don't use a temp file
-  (tempFilePath, tempHandle) <- openTempFile "/tmp" "tempXml.plist"
-  hPutStr tempHandle (T.unpack xmlInput)
-  hClose tempHandle
   let yqCommand = "yq -p=xml '.plist | keys | .[1]'"
-  (_, output, _) <- readProcessWithExitCode "sh" ["-c", T.unpack (yqCommand <> " " <> T.pack tempFilePath)] ""
+  (Just stdinYq, Just stdoutYq, _, _) <- createProcess (proc "sh" ["-c", T.unpack yqCommand]) {std_in = CreatePipe, std_out = CreatePipe}
+  hPutStrLn stdinYq (T.unpack xmlInput)
+  hClose stdinYq
+  output <- hGetContents stdoutYq
   -- TODO: Support boolean values
   return $ T.strip $ T.pack output
 
