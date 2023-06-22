@@ -69,7 +69,7 @@ callPlistBuddy :: Bool -> T.Text -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy useXML command path = do
   let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", T.unpack command, path]
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
-  return (exitCode, T.pack output)
+  return (exitCode, T.strip $ T.pack output)
 
 plistBuddyPath :: T.Text
 plistBuddyPath = "/usr/libexec/PlistBuddy"
