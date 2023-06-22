@@ -98,12 +98,14 @@ printAddCommand path key = do
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
-  TIO.putStrLn $ generateDeleteCommand key $ T.pack path
+  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> T.pack path
 
 printSetCommand :: FilePath -> T.Text -> IO ()
 printSetCommand path key = do
-  setCommand <- generateSetCommand key $ T.pack path
-  TIO.putStrLn setCommand
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
+  case exitCode of
+    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> T.pack path
+    _ -> putStrLn $ "Error getting current value for key: " <> T.unpack key
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
@@ -115,16 +117,3 @@ getValueType xmlInput = do
   if output == "true" || output == "false"
     then return "bool"
     else return output
-
-generateDeleteCommand :: T.Text -> T.Text -> T.Text
-generateDeleteCommand key path =
-  plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
-
-generateSetCommand :: T.Text -> T.Text -> IO T.Text
-generateSetCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
-  case exitCode of
-    ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
-    _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key
-      return ""
