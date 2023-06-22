@@ -2,7 +2,7 @@ module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, when)
-import Data.Aeson (Value, decode, encode)
+import Data.Aeson (Value (Bool, Number, String), decode, encode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
 import Data.ByteString.Lazy.Char8 (unpack)
@@ -97,9 +97,19 @@ printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
 
+valueTypeString :: Value -> String
+valueTypeString value =
+  case value of
+    (String _) -> "string"
+    (Number _) -> "integer" -- assuming integers for simplicity
+    (Bool _) -> "bool"
+    _ -> "unknown"
+
 generateAddCommand :: T.Text -> Value -> T.Text -> T.Text
 generateAddCommand key value path =
-  plistBuddyPath <> " -c \"Add " <> key <> " " <> T.pack (unpack (encode value)) <> "\" " <> path
+  let valueType = T.pack $ valueTypeString value
+      valueText = T.pack (unpack (encode value))
+   in plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> valueText <> "\" " <> path
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
