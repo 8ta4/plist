@@ -75,6 +75,12 @@ callPlistBuddy command path = do
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
 
+callPlistBuddy' :: String -> FilePath -> IO (ExitCode, T.Text)
+callPlistBuddy' command path = do
+  let plistBuddyArgs = ["-c", command, path]
+  (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
+  return (exitCode, T.pack output)
+
 convertPlistToJSON :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToJSON xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
@@ -83,10 +89,12 @@ convertPlistToJSON xmlInput = do
     Nothing -> return HashMap.empty
 
 printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key =
+printSetCommand oldContents currentContents path key = do
   let oldValue = oldContents HashMap.! key
       newValue = currentContents HashMap.! key
-   in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
+  when (oldValue /= newValue) $ do
+    setCommand <- generateSetCommand key $ T.pack path
+    TIO.putStrLn setCommand
 
 printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
 printAddCommand currentContents path key =
@@ -115,6 +123,11 @@ generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
   plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
 
-generateSetCommand :: T.Text -> Value -> T.Text -> T.Text
-generateSetCommand key value path =
-  plistBuddyPath <> " -c \"Set " <> key <> " " <> T.pack (unpack (encode value)) <> "\" " <> path
+generateSetCommand :: T.Text -> T.Text -> IO T.Text
+generateSetCommand key path = do
+  (exitCode, currentValue) <- callPlistBuddy' ("Print " <> T.unpack key) (T.unpack path)
+  case exitCode of
+    ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
+    _ -> do
+      putStrLn $ "Error getting current value for key: " <> T.unpack key <> " - " <> T.unpack currentValue
+      return ""
