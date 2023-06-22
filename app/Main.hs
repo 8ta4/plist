@@ -115,7 +115,7 @@ generateAddCommand key value path = do
       let valueType = T.pack $ valueTypeString value
       return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
     _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key <> " - " <> T.unpack currentValue
+      putStrLn $ "Error getting current value for key: " <> T.unpack key
       return ""
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
@@ -128,5 +128,5 @@ generateSetCommand key path = do
   case exitCode of
     ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
     _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key <> " - " <> T.unpack currentValue
+      putStrLn $ "Error getting current value for key: " <> T.unpack key
       return ""
