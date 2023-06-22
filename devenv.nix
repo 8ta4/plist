@@ -19,7 +19,7 @@
     ${pkgs.haskellPackages.stack}/bin/stack build --fast
   '';
   scripts.hello.exec = "echo hello from $GREET";
-  scripts.run.exec = ''
+  scripts.plist.exec = ''
     ${pkgs.ghcid}/bin/ghcid --command="${pkgs.stack}/bin/stack ghci" -T="main" --warnings
   '';
   scripts.check.exec = ''
