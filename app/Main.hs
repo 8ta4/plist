@@ -87,8 +87,14 @@ convertPlistToJSON xmlInput = do
 
 printAddCommand :: FilePath -> T.Text -> IO ()
 printAddCommand path key = do
-  addCommand <- generateAddCommand key $ T.pack path
-  TIO.putStrLn addCommand
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
+  case exitCode of
+    ExitSuccess -> do
+      xmlOutput <- callPlistBuddy True ("Print " <> key) path
+      valueType <- getValueType (snd xmlOutput)
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> T.pack path
+    _ -> do
+      putStrLn $ "Error getting current value for key: " <> T.unpack key
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
@@ -98,18 +104,6 @@ printSetCommand :: FilePath -> T.Text -> IO ()
 printSetCommand path key = do
   setCommand <- generateSetCommand key $ T.pack path
   TIO.putStrLn setCommand
-
-generateAddCommand :: T.Text -> T.Text -> IO T.Text
-generateAddCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
-  case exitCode of
-    ExitSuccess -> do
-      xmlOutput <- callPlistBuddy True ("Print " <> key) (T.unpack path)
-      valueType <- getValueType (snd xmlOutput)
-      return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
-    _ -> do
-      putStrLn $ "Error getting current value for key: " <> T.unpack key
-      return ""
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
