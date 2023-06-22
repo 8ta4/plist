@@ -118,9 +118,10 @@ getValueType xmlInput = do
   (Just stdinYq, Just stdoutYq, _, _) <- createProcess (proc "sh" ["-c", T.unpack yqCommand]) {std_in = CreatePipe, std_out = CreatePipe}
   hPutStrLn stdinYq (T.unpack xmlInput)
   hClose stdinYq
-  output <- hGetContents stdoutYq
-  -- TODO: Support boolean values
-  return $ T.strip $ T.pack output
+  output <- T.strip . T.pack <$> hGetContents stdoutYq
+  if output == "true" || output == "false"
+    then return "bool"
+    else return output
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
