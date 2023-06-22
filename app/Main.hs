@@ -65,9 +65,9 @@ printPlistFile cache path = do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
 
-callPlistBuddy :: Bool -> String -> FilePath -> IO (ExitCode, T.Text)
+callPlistBuddy :: Bool -> T.Text -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy useXML command path = do
-  let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", command, path]
+  let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", T.unpack command, path]
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
 
@@ -101,7 +101,7 @@ printSetCommand oldContents currentContents path key = do
 
 generateAddCommand :: T.Text -> Value -> T.Text -> IO T.Text
 generateAddCommand key value path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> T.unpack key) (T.unpack path)
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
   case exitCode of
     ExitSuccess -> do
       let valueType = T.pack $ valueTypeString value
@@ -124,7 +124,7 @@ generateDeleteCommand key path =
 
 generateSetCommand :: T.Text -> T.Text -> IO T.Text
 generateSetCommand key path = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> T.unpack key) (T.unpack path)
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
   case exitCode of
     ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
     _ -> do
