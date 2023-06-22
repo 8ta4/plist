@@ -14,6 +14,7 @@ main = hspec $ do
       head [23 ..] `shouldBe` (23 :: Int)
   describe "flattenObject" $ do
     it "flattens a nested JSON object with concatenated keys using colon delimiter" $ do
+      -- TODO: Read JSON from file
       let inputJSON = "{\"a\": {\"b\": 1, \"c\": {\"d\": 2}}}"
           expectedJSON = "{\":a:b\": 1, \":a:c:d\": 2}"
           input = decode (BL.pack inputJSON)

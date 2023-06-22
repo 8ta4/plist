@@ -47,6 +47,7 @@ printPlistFile cache path = do
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
+          -- TODO: Filter updatedKeys to only include keys whose values have changed
           let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
           let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
           let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
@@ -113,11 +114,13 @@ generateAddCommand key path = do
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
+  -- TODO: Don't use a temp file
   (tempFilePath, tempHandle) <- openTempFile "/tmp" "tempXml.plist"
   hPutStr tempHandle (T.unpack xmlInput)
   hClose tempHandle
   let yqCommand = "yq -p=xml '.plist | keys | .[1]'"
   (_, output, _) <- readProcessWithExitCode "sh" ["-c", T.unpack (yqCommand <> " " <> T.pack tempFilePath)] ""
+  -- TODO: Support boolean values
   return $ T.strip $ T.pack output
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
