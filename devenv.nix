@@ -10,6 +10,7 @@
     pkgs.git
     pkgs.ghcid
     pkgs.yarn
+    pkgs.yq-go
   ];
 
   # https://devenv.sh/scripts/
