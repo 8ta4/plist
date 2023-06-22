@@ -65,14 +65,14 @@ printPlistFile cache path = do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
 
-plistBuddyPath :: T.Text
-plistBuddyPath = "/usr/libexec/PlistBuddy"
-
 callPlistBuddy :: Bool -> String -> FilePath -> IO (ExitCode, T.Text)
 callPlistBuddy useXML command path = do
   let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", command, path]
   (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
   return (exitCode, T.pack output)
+
+plistBuddyPath :: T.Text
+plistBuddyPath = "/usr/libexec/PlistBuddy"
 
 convertPlistToJSON :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToJSON xmlInput = do
@@ -80,14 +80,6 @@ convertPlistToJSON xmlInput = do
   case decode (fromStrict $ encodeUtf8 jsonString) of
     Just obj -> return $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
-
-printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key = do
-  let oldValue = oldContents HashMap.! key
-      newValue = currentContents HashMap.! key
-  when (oldValue /= newValue) $ do
-    setCommand <- generateSetCommand key $ T.pack path
-    TIO.putStrLn setCommand
 
 printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
 printAddCommand currentContents path key = do
@@ -99,13 +91,13 @@ printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
 
-valueTypeString :: Value -> String
-valueTypeString value =
-  case value of
-    (String _) -> "string"
-    (Number _) -> "integer" -- assuming integers for simplicity
-    (Bool _) -> "bool"
-    _ -> "unknown"
+printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
+printSetCommand oldContents currentContents path key = do
+  let oldValue = oldContents HashMap.! key
+      newValue = currentContents HashMap.! key
+  when (oldValue /= newValue) $ do
+    setCommand <- generateSetCommand key $ T.pack path
+    TIO.putStrLn setCommand
 
 generateAddCommand :: T.Text -> Value -> T.Text -> IO T.Text
 generateAddCommand key value path = do
@@ -117,6 +109,14 @@ generateAddCommand key value path = do
     _ -> do
       putStrLn $ "Error getting current value for key: " <> T.unpack key
       return ""
+
+valueTypeString :: Value -> String
+valueTypeString value =
+  case value of
+    (String _) -> "string"
+    (Number _) -> "integer" -- assuming integers for simplicity
+    (Bool _) -> "bool"
+    _ -> "unknown"
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
