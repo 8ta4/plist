@@ -2,10 +2,9 @@ module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
 import Control.Monad (forever, when)
-import Data.Aeson (Value (Bool, Number, String), decode, encode)
+import Data.Aeson (Value (Bool, Number, String), decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
-import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
@@ -40,7 +39,7 @@ main = do
 printPlistFile :: PlistCache -> FilePath -> IO ()
 printPlistFile cache path = do
   previousContents <- Cache.lookup cache path
-  (exitCode, xmlData) <- callPlistBuddy "Print" path
+  (exitCode, xmlData) <- callPlistBuddy True "Print" path
   case exitCode of
     ExitSuccess -> do
       currentContents <- convertPlistToJSON xmlData
@@ -66,14 +65,14 @@ printPlistFile cache path = do
       TIO.putStrLn $ "Error reading plist file: " <> T.pack path <> " - " <> xmlData
       return ()
 
+callPlistBuddy :: Bool -> T.Text -> FilePath -> IO (ExitCode, T.Text)
+callPlistBuddy useXML command path = do
+  let plistBuddyArgs = (if useXML then ("-x" :) else id) ["-c", T.unpack command, path]
+  (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
+  return (exitCode, T.strip $ T.pack output)
+
 plistBuddyPath :: T.Text
 plistBuddyPath = "/usr/libexec/PlistBuddy"
-
-callPlistBuddy :: String -> FilePath -> IO (ExitCode, T.Text)
-callPlistBuddy command path = do
-  let plistBuddyArgs = ["-x", "-c", command, path]
-  (exitCode, output, _) <- readProcessWithExitCode (T.unpack plistBuddyPath) plistBuddyArgs ""
-  return (exitCode, T.pack output)
 
 convertPlistToJSON :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToJSON xmlInput = do
@@ -82,20 +81,34 @@ convertPlistToJSON xmlInput = do
     Just obj -> return $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
 
-printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key =
-  let oldValue = oldContents HashMap.! key
-      newValue = currentContents HashMap.! key
-   in when (oldValue /= newValue) $ TIO.putStrLn $ generateSetCommand key newValue $ T.pack path
-
 printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printAddCommand currentContents path key =
+printAddCommand currentContents path key = do
   let value = currentContents HashMap.! key
-   in TIO.putStrLn $ generateAddCommand key value $ T.pack path
+  addCommand <- generateAddCommand key value $ T.pack path
+  TIO.putStrLn addCommand
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
+
+printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
+printSetCommand oldContents currentContents path key = do
+  let oldValue = oldContents HashMap.! key
+      newValue = currentContents HashMap.! key
+  when (oldValue /= newValue) $ do
+    setCommand <- generateSetCommand key $ T.pack path
+    TIO.putStrLn setCommand
+
+generateAddCommand :: T.Text -> Value -> T.Text -> IO T.Text
+generateAddCommand key value path = do
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
+  case exitCode of
+    ExitSuccess -> do
+      let valueType = T.pack $ valueTypeString value
+      return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
+    _ -> do
+      putStrLn $ "Error getting current value for key: " <> T.unpack key
+      return ""
 
 valueTypeString :: Value -> String
 valueTypeString value =
@@ -105,16 +118,15 @@ valueTypeString value =
     (Bool _) -> "bool"
     _ -> "unknown"
 
-generateAddCommand :: T.Text -> Value -> T.Text -> T.Text
-generateAddCommand key value path =
-  let valueType = T.pack $ valueTypeString value
-      valueText = T.pack (unpack (encode value))
-   in plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> valueText <> "\" " <> path
-
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =
   plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> path
 
-generateSetCommand :: T.Text -> Value -> T.Text -> T.Text
-generateSetCommand key value path =
-  plistBuddyPath <> " -c \"Set " <> key <> " " <> T.pack (unpack (encode value)) <> "\" " <> path
+generateSetCommand :: T.Text -> T.Text -> IO T.Text
+generateSetCommand key path = do
+  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
+  case exitCode of
+    ExitSuccess -> return $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> path
+    _ -> do
+      putStrLn $ "Error getting current value for key: " <> T.unpack key
+      return ""
