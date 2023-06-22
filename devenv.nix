@@ -10,10 +10,12 @@
     pkgs.git
     pkgs.ghcid
     pkgs.yarn
+    pkgs.yq-go
   ];
 
   # https://devenv.sh/scripts/
   scripts.build.exec = ''
+    ${pkgs.yarn}/bin/yarn install
     ${pkgs.haskellPackages.stack}/bin/stack build --fast
   '';
   scripts.hello.exec = "echo hello from $GREET";

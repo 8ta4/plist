@@ -5,6 +5,6 @@
   "repository": "git@github.com:illnessmerit/plist.git",
   "license": "MIT",
   "dependencies": {
-    "plist": "^3.0.6"
+    "plist": "3.0.6"
   }
 }

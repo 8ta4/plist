@@ -1,8 +1,8 @@
 module Main (main) where
 
 import Control.Concurrent (forkIO, threadDelay)
-import Control.Monad (forever, when)
-import Data.Aeson (Value (Bool, Number, String), decode)
+import Control.Monad (forever)
+import Data.Aeson (Value, decode)
 import Data.Aeson.KeyMap (toHashMapText)
 import Data.ByteString.Lazy (fromStrict)
 import Data.Cache (Cache, insert, newCache)
@@ -12,10 +12,11 @@ import Data.HashMap.Strict qualified as HashMap
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
-import GHC.IO.Handle (hGetLine)
+import GHC.IO.Handle (hGetContents, hGetLine)
 import Lib (flattenObject)
 import System.Exit (ExitCode (..))
-import System.Process (CreateProcess (std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
+import System.IO (hClose, hPutStrLn)
+import System.Process (CreateProcess (std_in, std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
 import Prelude
 
 type PlistCache = Cache FilePath (HashMap T.Text Value)
@@ -46,13 +47,16 @@ printPlistFile cache path = do
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
-          let updatedKeys = HashMap.keys $ HashMap.intersection currentContents oldContents
+          let updatedKeys =
+                filter
+                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
           let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
           let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
 
           -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printSetCommand oldContents currentContents path) updatedKeys
-          mapM_ (printAddCommand currentContents path) addedKeys
+          mapM_ (printSetCommand path) updatedKeys
+          mapM_ (printAddCommand path) addedKeys
           mapM_ (printDeleteCommand path) deletedKeys
 
           -- Update the cache with the new contents
@@ -81,42 +85,42 @@ convertPlistToJSON xmlInput = do
     Just obj -> return $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
 
-printAddCommand :: HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printAddCommand currentContents path key = do
-  let value = currentContents HashMap.! key
-  addCommand <- generateAddCommand key value $ T.pack path
+printAddCommand :: FilePath -> T.Text -> IO ()
+printAddCommand path key = do
+  addCommand <- generateAddCommand key $ T.pack path
   TIO.putStrLn addCommand
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
 printDeleteCommand path key =
   TIO.putStrLn $ generateDeleteCommand key $ T.pack path
 
-printSetCommand :: HashMap T.Text Value -> HashMap T.Text Value -> FilePath -> T.Text -> IO ()
-printSetCommand oldContents currentContents path key = do
-  let oldValue = oldContents HashMap.! key
-      newValue = currentContents HashMap.! key
-  when (oldValue /= newValue) $ do
-    setCommand <- generateSetCommand key $ T.pack path
-    TIO.putStrLn setCommand
+printSetCommand :: FilePath -> T.Text -> IO ()
+printSetCommand path key = do
+  setCommand <- generateSetCommand key $ T.pack path
+  TIO.putStrLn setCommand
 
-generateAddCommand :: T.Text -> Value -> T.Text -> IO T.Text
-generateAddCommand key value path = do
+generateAddCommand :: T.Text -> T.Text -> IO T.Text
+generateAddCommand key path = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) (T.unpack path)
   case exitCode of
     ExitSuccess -> do
-      let valueType = T.pack $ valueTypeString value
+      xmlOutput <- callPlistBuddy True ("Print " <> key) (T.unpack path)
+      valueType <- getValueType (snd xmlOutput)
       return $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> path
     _ -> do
       putStrLn $ "Error getting current value for key: " <> T.unpack key
       return ""
 
-valueTypeString :: Value -> String
-valueTypeString value =
-  case value of
-    (String _) -> "string"
-    (Number _) -> "integer" -- assuming integers for simplicity
-    (Bool _) -> "bool"
-    _ -> "unknown"
+getValueType :: T.Text -> IO T.Text
+getValueType xmlInput = do
+  let yqCommand = "yq -p=xml '.plist | keys | .[1]'"
+  (Just stdinYq, Just stdoutYq, _, _) <- createProcess (proc "sh" ["-c", T.unpack yqCommand]) {std_in = CreatePipe, std_out = CreatePipe}
+  hPutStrLn stdinYq (T.unpack xmlInput)
+  hClose stdinYq
+  output <- T.strip . T.pack <$> hGetContents stdoutYq
+  if output == "true" || output == "false"
+    then return "bool"
+    else return output
 
 generateDeleteCommand :: T.Text -> T.Text -> T.Text
 generateDeleteCommand key path =

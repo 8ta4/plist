@@ -23,3 +23,4 @@ jobs:
       - run: devenv ci
       - run: devenv shell echo ok
       - run: devenv shell build
+      - run: devenv shell stack test
