@@ -9,6 +9,7 @@ import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
+import Data.List (sort)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
@@ -47,11 +48,12 @@ printPlistFile cache path = do
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
           let updatedKeys =
-                filter
-                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
-                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
-          let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
-          let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
+                sort $
+                  filter
+                    (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                    (HashMap.keys $ HashMap.intersection currentContents oldContents)
+          let addedKeys = sort $ HashMap.keys $ HashMap.difference currentContents oldContents
+          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
 
           -- Generate and print the Set, Add, and Delete commands
           mapM_ (printSetCommand path) updatedKeys
