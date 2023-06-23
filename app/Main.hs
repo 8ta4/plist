@@ -42,7 +42,7 @@ printPlistFile cache path = do
   (exitCode, xmlData) <- callPlistBuddy True "Print" path
   case exitCode of
     ExitSuccess -> do
-      currentContents <- convertPlistToJSON xmlData
+      currentContents <- convertPlistToHashMap xmlData
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
@@ -75,12 +75,18 @@ callPlistBuddy useXML command path = do
 plistBuddyPath :: T.Text
 plistBuddyPath = "/usr/libexec/PlistBuddy"
 
-convertPlistToJSON :: T.Text -> IO (HashMap T.Text Value)
-convertPlistToJSON xmlInput = do
+convertPlistToHashMap :: T.Text -> IO (HashMap T.Text Value)
+convertPlistToHashMap xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) of
-    Just obj -> return $ toHashMapText (flattenObject obj)
+    Just obj -> return $ quoteKeys $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
+
+addSingleQuotes :: T.Text -> T.Text
+addSingleQuotes s = "'" <> s <> "'"
+
+quoteKeys :: HashMap T.Text a -> HashMap T.Text a
+quoteKeys = HashMap.mapKeys addSingleQuotes
 
 printAddCommand :: FilePath -> T.Text -> IO ()
 printAddCommand path key = do
