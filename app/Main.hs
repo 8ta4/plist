@@ -9,11 +9,13 @@ import Data.Cache (Cache, insert, newCache)
 import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
+import Data.List (sort)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import GHC.IO.Handle (hGetContents, hGetLine)
 import Lib (flattenObject)
+import System.Directory (getHomeDirectory)
 import System.Exit (ExitCode (..))
 import System.IO (hClose, hPutStrLn)
 import System.Process (CreateProcess (std_in, std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
@@ -46,17 +48,18 @@ printPlistFile cache path = do
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
-          let updatedKeys =
-                filter
-                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
-                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
-          let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
-          let deletedKeys = HashMap.keys $ HashMap.difference oldContents currentContents
+          let addedKeys = sort $ HashMap.keys $ HashMap.difference currentContents oldContents
+          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
+          let setKeys =
+                sort $
+                  filter
+                    (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                    (HashMap.keys $ HashMap.intersection currentContents oldContents)
 
           -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printSetCommand path) updatedKeys
           mapM_ (printAddCommand path) addedKeys
           mapM_ (printDeleteCommand path) deletedKeys
+          mapM_ (printSetCommand path) setKeys
 
           -- Update the cache with the new contents
           insert cache path currentContents
@@ -91,23 +94,35 @@ quoteKeys = HashMap.mapKeys addSingleQuotes
 printAddCommand :: FilePath -> T.Text -> IO ()
 printAddCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
+  newPath <- replaceUserPath path
   case exitCode of
     ExitSuccess -> do
       xmlOutput <- callPlistBuddy True ("Print " <> key) path
       valueType <- getValueType (snd xmlOutput)
-      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> T.pack path
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> newPath
     _ -> return ()
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
-printDeleteCommand path key =
-  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> T.pack path
+printDeleteCommand path key = do
+  newPath <- replaceUserPath path
+  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
 
 printSetCommand :: FilePath -> T.Text -> IO ()
 printSetCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
+  newPath <- replaceUserPath path
   case exitCode of
-    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> T.pack path
+    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> newPath
     _ -> return ()
+
+replaceUserPath :: FilePath -> IO T.Text
+replaceUserPath path = do
+  homeDir <- getHomeDirectory
+  let homeDirText = T.pack homeDir
+  let pathText = T.pack path
+  if T.isPrefixOf homeDirText pathText
+    then return $ "\"" <> T.replace homeDirText "$HOME" pathText <> "\""
+    else return pathText
 
 getValueType :: T.Text -> IO T.Text
 getValueType xmlInput = do
