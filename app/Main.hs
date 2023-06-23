@@ -79,8 +79,14 @@ convertPlistToHashMap :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToHashMap xmlInput = do
   jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) of
-    Just obj -> return $ toHashMapText (flattenObject obj)
+    Just obj -> return $ quoteKeys $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
+
+addSingleQuotes :: T.Text -> T.Text
+addSingleQuotes s = "'" <> s <> "'"
+
+quoteKeys :: HashMap T.Text a -> HashMap T.Text a
+quoteKeys = HashMap.mapKeys addSingleQuotes
 
 printAddCommand :: FilePath -> T.Text -> IO ()
 printAddCommand path key = do
