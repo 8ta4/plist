@@ -99,7 +99,7 @@ printAddCommand path key = do
     ExitSuccess -> do
       xmlOutput <- callPlistBuddy True ("Print " <> key) path
       valueType <- getValueType (snd xmlOutput)
-      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> currentValue <> "\" " <> newPath
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
     _ -> return ()
 
 printDeleteCommand :: FilePath -> T.Text -> IO ()
@@ -112,7 +112,7 @@ printSetCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   newPath <- replaceUserPath path
   case exitCode of
-    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> currentValue <> "\" " <> newPath
+    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
     _ -> return ()
 
 replaceUserPath :: FilePath -> IO T.Text
