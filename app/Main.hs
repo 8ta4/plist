@@ -85,9 +85,11 @@ convertPlistToHashMap xmlInput = do
     Just obj -> return $ quoteKeys $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
 
+-- This function is used to quote keys and values because they might contain spaces.
 addSingleQuotes :: T.Text -> T.Text
 addSingleQuotes s = "'" <> s <> "'"
 
+-- This function is used to quote keys because they might contain spaces.
 quoteKeys :: HashMap T.Text a -> HashMap T.Text a
 quoteKeys = HashMap.mapKeys addSingleQuotes
 
