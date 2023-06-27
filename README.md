@@ -27,7 +27,9 @@ cd plist
 
 > How do I use the tool?
 
-1. First things first, open up your terminal and run this command:
+1. First, open your terminal and make sure you're in the project directory where plist is installed. If you're not sure, use the cd command to navigate there.
+
+2. Run this command:
 
    ```bash
    plist
@@ -35,13 +37,13 @@ cd plist
 
    That'll start the monitoring process for plist files.
 
-2. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
+3. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
 
-3. After you've made some changes, you'll see commands like these in the tool's output:
+4. After you've made some changes, you'll see commands like these in the tool's output:
 
    ```bash
    /usr/libexec/PlistBuddy -c "Set :tilesize 36" ~/Library/Preferences/com.apple.dock.plist
    /usr/libexec/PlistBuddy -c "Set :orientation left" ~/Library/Preferences/com.apple.dock.plist
    ```
 
-4. If you want to use these commands in a setup script, just copy and paste the generated `PlistBuddy` commands into your script.
+5. If you want to use these commands in a setup script, just copy and paste the generated `PlistBuddy` commands into your script.
