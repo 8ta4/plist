@@ -39,11 +39,10 @@ cd plist
 
 3. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
 
-4. After you've made some changes, you'll see commands like these in the tool's output:
+4. After you've made some changes, you'll see a command like this in the tool's output:
 
    ```bash
-   /usr/libexec/PlistBuddy -c "Set :tilesize 36" ~/Library/Preferences/com.apple.dock.plist
-   /usr/libexec/PlistBuddy -c "Set :orientation left" ~/Library/Preferences/com.apple.dock.plist
+   /usr/libexec/PlistBuddy -c "Set ':autohide' 'true'" "$HOME/Library/Preferences/com.apple.dock.plist"
    ```
 
-5. If you want to use these commands in a setup script, just copy and paste the generated `PlistBuddy` commands into your script.
+5. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
