@@ -46,3 +46,5 @@ cd plist
    ```
 
 5. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
+
+Check out [this video](https://youtu.be/CPLy3ImVZk8?t=190) where I used the plist tool to generate a command to configure the Dock.
