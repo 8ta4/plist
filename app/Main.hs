@@ -47,17 +47,17 @@ printPlistFile cache path = do
       currentContents <- convertPlistToHashMap xmlData
       case previousContents of
         Just oldContents -> do
-          -- Find the updated, added, and deleted keys
+          -- Find keys
           let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
-          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
           let setKeys =
                 filter
                   (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
                   (HashMap.keys $ HashMap.intersection currentContents oldContents)
           let mergedKeys = sort (addedKeys <> setKeys)
+          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
 
-          -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printSetCommand path) mergedKeys
+          -- Generate commands
+          mapM_ (printDeleteAddCommand path) mergedKeys
           mapM_ (printDeleteCommand path) deletedKeys
 
           -- Update the cache with the new contents
@@ -98,8 +98,8 @@ printDeleteCommand path key = do
   TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
 
 -- Delete the entry if it exists and add it with the desired value. This way, the script will be idempotent.
-printSetCommand :: FilePath -> T.Text -> IO ()
-printSetCommand path key = do
+printDeleteAddCommand :: FilePath -> T.Text -> IO ()
+printDeleteAddCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   newPath <- replaceUserPath path
   case exitCode of
