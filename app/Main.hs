@@ -57,7 +57,7 @@ printPlistFile cache path = do
                     (HashMap.keys $ HashMap.intersection currentContents oldContents)
 
           -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printAddCommand path) addedKeys
+          mapM_ (printSetCommand path) addedKeys
           mapM_ (printDeleteCommand path) deletedKeys
           mapM_ (printSetCommand path) setKeys
 
@@ -93,28 +93,21 @@ addSingleQuotes s = "'" <> s <> "'"
 quoteKeys :: HashMap T.Text a -> HashMap T.Text a
 quoteKeys = HashMap.mapKeys addSingleQuotes
 
-printAddCommand :: FilePath -> T.Text -> IO ()
-printAddCommand path key = do
+printDeleteCommand :: FilePath -> T.Text -> IO ()
+printDeleteCommand path key = do
+  newPath <- replaceUserPath path
+  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
+
+-- The idea is to delete the entry if it exists and then add it with the desired value. This way, the script will work regardless of whether the entry already exists or not, and the outcome will be the same every time the script is run (i.e., the script will be idempotent).
+printSetCommand :: FilePath -> T.Text -> IO ()
+printSetCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   newPath <- replaceUserPath path
   case exitCode of
     ExitSuccess -> do
       xmlOutput <- callPlistBuddy True ("Print " <> key) path
       valueType <- getValueType (snd xmlOutput)
-      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
-    _ -> return ()
-
-printDeleteCommand :: FilePath -> T.Text -> IO ()
-printDeleteCommand path key = do
-  newPath <- replaceUserPath path
-  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
-
-printSetCommand :: FilePath -> T.Text -> IO ()
-printSetCommand path key = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
-  newPath <- replaceUserPath path
-  case exitCode of
-    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" -c \"Add " <> key <> " " <> valueType <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
     _ -> return ()
 
 replaceUserPath :: FilePath -> IO T.Text
