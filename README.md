@@ -42,7 +42,7 @@ cd plist
 4. After you've made some changes, you'll see a command like this in the tool's output:
 
    ```bash
-   /usr/libexec/PlistBuddy -c "Set ':autohide' 'true'" "$HOME/Library/Preferences/com.apple.dock.plist"
+   /usr/libexec/PlistBuddy -c "Delete ':autohide'" -c "Add ':autohide' bool 'true'" "$HOME/Library/Preferences/com.apple.dock.plist"
    ```
 
 5. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
