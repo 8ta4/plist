@@ -47,19 +47,18 @@ printPlistFile cache path = do
       currentContents <- convertPlistToHashMap xmlData
       case previousContents of
         Just oldContents -> do
-          -- Find the updated, added, and deleted keys
-          let addedKeys = sort $ HashMap.keys $ HashMap.difference currentContents oldContents
-          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
+          -- Find keys
+          let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
           let setKeys =
-                sort $
-                  filter
-                    (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
-                    (HashMap.keys $ HashMap.intersection currentContents oldContents)
+                filter
+                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
+          let mergedKeys = sort (addedKeys <> setKeys)
+          let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
 
-          -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printAddCommand path) addedKeys
+          -- Generate commands
+          mapM_ (printDeleteAddCommand path) mergedKeys
           mapM_ (printDeleteCommand path) deletedKeys
-          mapM_ (printSetCommand path) setKeys
 
           -- Update the cache with the new contents
           insert cache path currentContents
@@ -93,28 +92,21 @@ addSingleQuotes s = "'" <> s <> "'"
 quoteKeys :: HashMap T.Text a -> HashMap T.Text a
 quoteKeys = HashMap.mapKeys addSingleQuotes
 
-printAddCommand :: FilePath -> T.Text -> IO ()
-printAddCommand path key = do
+printDeleteCommand :: FilePath -> T.Text -> IO ()
+printDeleteCommand path key = do
+  newPath <- replaceUserPath path
+  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
+
+-- Delete the entry if it exists and add it with the desired value. This way, the script will be idempotent.
+printDeleteAddCommand :: FilePath -> T.Text -> IO ()
+printDeleteAddCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
   newPath <- replaceUserPath path
   case exitCode of
     ExitSuccess -> do
       xmlOutput <- callPlistBuddy True ("Print " <> key) path
       valueType <- getValueType (snd xmlOutput)
-      TIO.putStrLn $ plistBuddyPath <> " -c \"Add " <> key <> " " <> valueType <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
-    _ -> return ()
-
-printDeleteCommand :: FilePath -> T.Text -> IO ()
-printDeleteCommand path key = do
-  newPath <- replaceUserPath path
-  TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
-
-printSetCommand :: FilePath -> T.Text -> IO ()
-printSetCommand path key = do
-  (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
-  newPath <- replaceUserPath path
-  case exitCode of
-    ExitSuccess -> TIO.putStrLn $ plistBuddyPath <> " -c \"Set " <> key <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
+      TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" -c \"Add " <> key <> " " <> valueType <> " " <> addSingleQuotes currentValue <> "\" " <> newPath
     _ -> return ()
 
 replaceUserPath :: FilePath -> IO T.Text
