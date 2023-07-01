@@ -48,18 +48,17 @@ printPlistFile cache path = do
       case previousContents of
         Just oldContents -> do
           -- Find the updated, added, and deleted keys
-          let addedKeys = sort $ HashMap.keys $ HashMap.difference currentContents oldContents
+          let addedKeys = HashMap.keys $ HashMap.difference currentContents oldContents
           let deletedKeys = sort $ HashMap.keys $ HashMap.difference oldContents currentContents
           let setKeys =
-                sort $
-                  filter
-                    (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
-                    (HashMap.keys $ HashMap.intersection currentContents oldContents)
+                filter
+                  (\key -> HashMap.lookup key currentContents /= HashMap.lookup key oldContents)
+                  (HashMap.keys $ HashMap.intersection currentContents oldContents)
+          let mergedKeys = sort (addedKeys <> setKeys)
 
           -- Generate and print the Set, Add, and Delete commands
-          mapM_ (printSetCommand path) addedKeys
+          mapM_ (printSetCommand path) mergedKeys
           mapM_ (printDeleteCommand path) deletedKeys
-          mapM_ (printSetCommand path) setKeys
 
           -- Update the cache with the new contents
           insert cache path currentContents
