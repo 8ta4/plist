@@ -97,7 +97,7 @@ printDeleteCommand path key = do
   newPath <- replaceUserPath path
   TIO.putStrLn $ plistBuddyPath <> " -c \"Delete " <> key <> "\" " <> newPath
 
--- The idea is to delete the entry if it exists and then add it with the desired value. This way, the script will work regardless of whether the entry already exists or not, and the outcome will be the same every time the script is run (i.e., the script will be idempotent).
+-- Delete the entry if it exists and add it with the desired value. This way, the script will be idempotent.
 printSetCommand :: FilePath -> T.Text -> IO ()
 printSetCommand path key = do
   (exitCode, currentValue) <- callPlistBuddy False ("Print " <> key) path
