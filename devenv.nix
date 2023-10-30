@@ -29,6 +29,7 @@
   enterShell = ''
     hello
     git --version
+    # TODO: Incorporate dependency installation via enterShell
   '';
 
   # https://devenv.sh/languages/
