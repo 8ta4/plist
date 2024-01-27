@@ -29,7 +29,7 @@ cd plist
 
 1. First, open your terminal and make sure you're in the project directory where plist is installed. If you're not sure, use the cd command to navigate there.
 
-2. Run this command:
+1. Run this command:
 
    ```bash
    plist
@@ -37,14 +37,14 @@ cd plist
 
    That'll start the monitoring process for plist files.
 
-3. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
+1. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
 
-4. After you've made some changes, you'll see a command like this in the tool's output:
+1. After you've made some changes, you'll see a command like this in the tool's output:
 
    ```bash
    /usr/libexec/PlistBuddy -c "Delete ':autohide'" -c "Add ':autohide' bool 'true'" "$HOME/Library/Preferences/com.apple.dock.plist"
    ```
 
-5. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
+1. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
 
 Check out [this video](https://youtu.be/XvtGb3GxfWw?t=8272) where I used the plist tool to generate a command to configure the Dock.
