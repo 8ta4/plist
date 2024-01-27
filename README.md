@@ -27,7 +27,9 @@ cd plist
 
 > How do I use the tool?
 
-1. First, open your terminal and make sure you're in the project directory where plist is installed. If you're not sure, use the cd command to navigate there.
+1. Open your terminal and make sure you're in the project directory where plist is installed.
+
+1. `cd` into the project directory where `plist` is installed.
 
 1. Run this command:
 
@@ -48,3 +50,11 @@ cd plist
 1. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
 
 Check out [this video](https://youtu.be/XvtGb3GxfWw?t=8272) where I used the plist tool to generate a command to configure the Dock.
+
+> How can I monitor plist files that need root access?
+
+To monitor plist files that need root permission (like those in `var/root`), use `sudo`:
+
+```bash
+sudo plist
+```
