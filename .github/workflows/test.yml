@@ -23,5 +23,10 @@ jobs:
       - name: Build the devenv shell and run any pre-commit hooks
         run: devenv ci
 
+      - shell: devenv shell bash -e {0}
+        run: |
+          # https://stackoverflow.com/a/75641511
+          nix-channel --add https://nixos.org/channels/nixpkgs-unstable
+          nix-channel --update
       - run: devenv shell build
       - run: devenv shell stack test
