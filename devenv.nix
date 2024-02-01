@@ -16,7 +16,7 @@
   # https://devenv.sh/scripts/
   scripts.build.exec = ''
     ${pkgs.yarn}/bin/yarn install
-    ${pkgs.haskellPackages.stack}/bin/stack build --fast
+    ${pkgs.haskellPackages.stack}/bin/stack --local-bin-path . --nix install
   '';
   scripts.hello.exec = "echo hello from $GREET";
   scripts.plist.exec = ''
