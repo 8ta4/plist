@@ -74,7 +74,7 @@ library
     , unordered-containers
   default-language: Haskell2010
 
-executable plist-exe
+executable plist
   main-is: Main.hs
   other-modules:
       Paths_plist

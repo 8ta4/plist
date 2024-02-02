@@ -78,7 +78,7 @@ library:
   source-dirs: src
 
 executables:
-  plist-exe:
+  plist:
     main: Main.hs
     source-dirs: app
     ghc-options:
