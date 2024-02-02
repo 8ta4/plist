@@ -38,21 +38,19 @@ Unlike `defaults write`, `PlistBuddy` can handle nested preference values. But `
 
    That'll start the monitoring process for plist files.
 
-1. Now, go ahead and change some preferences in macOS, like your Dock settings. The tool will be watching for any plist file changes and will generate `PlistBuddy` commands for you.
-
-1. After you've made some changes, you'll see a command like this in the tool's output:
+1. Change some preferences in macOS, like your Dock settings. `plist` will be watching for any plist file changes and will generate `PlistBuddy` commands. You'll see a command like this in the tool's output:
 
    ```bash
    /usr/libexec/PlistBuddy -c "Delete ':autohide'" -c "Add ':autohide' bool 'true'" "$HOME/Library/Preferences/com.apple.dock.plist"
    ```
 
-1. If you want to use this command in a setup script, just copy and paste the generated `PlistBuddy` command into your script.
+1. Copy and paste the generated `PlistBuddy` command into your setup script.
 
 Check out [this video](https://youtu.be/XvtGb3GxfWw?t=8272) where I used the plist tool to generate a command to configure the Dock.
 
 > How can I monitor plist files that need root access?
 
-To monitor plist files that need root permission (like those in `var/root`), use `sudo`:
+To monitor plist files that need root permission (like those in `/var/root`), use `sudo`:
 
 ```bash
 sudo plist
