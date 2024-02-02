@@ -20,16 +20,15 @@ extra-source-files:
 description: Please see the README on GitHub at <https://github.com/githubuser/plist#readme>
 
 dependencies:
-  # TODO: Remove version numbers.
-  - aeson == 2.0.3.0
-  - base == 4.16.4.0
-  - bytestring == 0.11.4.0
-  - cache == 0.1.3.0
-  - directory == 1.3.6.2
-  - hashable == 1.4.2.0
-  - process == 1.6.16.0
-  - text == 1.2.5.0
-  - unordered-containers == 0.2.19.1
+  - aeson
+  - base
+  - bytestring
+  - cache
+  - directory
+  - hashable
+  - process
+  - text
+  - unordered-containers
 
 ghc-options:
   - -Wall
