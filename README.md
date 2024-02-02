@@ -28,9 +28,7 @@ Unlike `defaults write`, `PlistBuddy` can handle nested preference values. But `
 
 > How do I use the tool?
 
-1. Open your terminal and make sure you're in the project directory where plist is installed.
-
-1. `cd` into the project directory where `plist` is installed.
+1. Open your terminal.
 
 1. Run this command:
 
