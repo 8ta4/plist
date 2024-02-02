@@ -14,14 +14,15 @@ Unlike `defaults write`, `PlistBuddy` can handle nested preference values. But `
 
 > How do I install the tool?
 
-You need to install devenv and direnv. Check out the [devenv getting started page](https://devenv.sh/getting-started/#installation) and the [direnv installation guide](https://devenv.sh/automatic-shell-activation/#installing-direnv) to get them set up on your system.
+1. Make sure you're using a Mac with Apple silicon.
 
-Once you've got devenv and direnv installed, just run these commands:
+1. Install [Homebrew](https://brew.sh/#install).
 
-```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/8ta4/plist/main/install.sh)"
-cd plist
-```
+1. Run this command in your terminal:
+
+   ```sh
+   brew install 8ta4/plist/plist
+   ```
 
 ## Usage
 
