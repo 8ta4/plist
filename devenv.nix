@@ -34,7 +34,10 @@
 
   # https://devenv.sh/languages/
   # languages.nix.enable = true;
-  languages.haskell.enable = true;
+  languages.haskell = {
+    enable = true;
+    package = pkgs.haskell.compiler.ghc92;
+  };
   languages.javascript.enable = true;
 
   # https://devenv.sh/pre-commit-hooks/

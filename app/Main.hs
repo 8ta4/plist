@@ -10,12 +10,14 @@ import Data.Cache qualified as Cache
 import Data.HashMap.Strict (HashMap)
 import Data.HashMap.Strict qualified as HashMap
 import Data.List (sort)
+import Data.Maybe (fromMaybe)
 import Data.Text qualified as T
 import Data.Text.Encoding (encodeUtf8)
 import Data.Text.IO qualified as TIO
 import GHC.IO.Handle (hGetContents, hGetLine)
 import Lib (flattenObject)
 import System.Directory (getHomeDirectory)
+import System.Environment (lookupEnv)
 import System.Exit (ExitCode (..))
 import System.IO (hClose, hPutStrLn)
 import System.Process (CreateProcess (std_in, std_out), StdStream (CreatePipe), createProcess, proc, readProcess, readProcessWithExitCode)
@@ -79,7 +81,9 @@ plistBuddyPath = "/usr/libexec/PlistBuddy"
 
 convertPlistToHashMap :: T.Text -> IO (HashMap T.Text Value)
 convertPlistToHashMap xmlInput = do
-  jsonString <- T.pack <$> readProcess "node" ["index.js", T.unpack xmlInput] ""
+  maybeScriptDirectory <- lookupEnv "SCRIPT_DIRECTORY"
+  let scriptDirectory = fromMaybe "." maybeScriptDirectory
+  jsonString <- T.pack <$> readProcess "node" [scriptDirectory <> "/index.js", T.unpack xmlInput] ""
   case decode (fromStrict $ encodeUtf8 jsonString) of
     Just obj -> return $ quoteKeys $ toHashMapText (flattenObject obj)
     Nothing -> return HashMap.empty
