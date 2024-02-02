@@ -171,7 +171,7 @@ test-suite plist-test
     , cache
     , directory
     , hashable
-    , hspec ==2.9.7
+    , hspec
     , plist
     , process
     , text

@@ -99,4 +99,4 @@ tests:
       - -main-is Spec
     dependencies:
       - plist
-      - hspec == 2.9.7
+      - hspec
