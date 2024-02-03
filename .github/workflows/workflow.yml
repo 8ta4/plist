@@ -28,6 +28,7 @@ jobs:
           # https://stackoverflow.com/a/75641511
           nix-channel --add https://nixos.org/channels/nixpkgs-unstable
           nix-channel --update
+      - run: devenv shell build
       - run: stack --local-bin-path . install
       - run: devenv shell stack test
       - run: tar -czvf plist.tar.gz .
