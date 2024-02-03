@@ -23,12 +23,8 @@ jobs:
         run: nix profile install tarball+https://install.devenv.sh/latest
       - name: Build the devenv shell and run any pre-commit hooks
         run: devenv ci
-      - shell: devenv shell bash -e {0}
-        run: |
-          # https://stackoverflow.com/a/75641511
-          nix-channel --add https://nixos.org/channels/nixpkgs-unstable
-          nix-channel --update
       - run: devenv shell build
+
       # Using Homebrew's stack to manage Haskell dependencies and avoid issues with dynamic library loading
       - run: stack --local-bin-path . install
       - run: devenv shell stack test
