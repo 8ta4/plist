@@ -55,3 +55,7 @@ To monitor plist files that need root permission (like those in `/var/root`), us
 ```bash
 sudo plist
 ```
+
+> Can this tool spot every preference change?
+
+Nah, `plist` can't spot every preference change because some preferences are not stored in plist files. Some settings might be in databases or other formats that `plist` doesn't watch.
