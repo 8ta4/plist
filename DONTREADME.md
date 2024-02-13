@@ -13,9 +13,8 @@
 1. Run the following commands:
 
    ```sh
-   git clone git@github.com:8ta4/plist.git
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/8ta4/plist/main/install.sh)"
    cd plist
-   direnv allow
    ```
 
 The `devenv.nix` file has got all the scripts you need.
