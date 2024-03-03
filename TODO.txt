@@ -1,1 +1,2 @@
+Eliminate extra blank lines before comments.
 Switch to npm.
