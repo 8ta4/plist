@@ -6,7 +6,7 @@
 
 This tool lets you manage plist files on macOS. It keeps an eye on changes in plist files and spits out `PlistBuddy` commands when you update preferences in macOS or apps. It's useful for turning those preference settings into a setup script, so you can have a reproducible environment.
 
-[![](https://raw.githubusercontent.com/8ta4/plist-media/f271d49d4c8616afcc99e5c515ca192103001507/timeline.gif)](https://www.youtube.com/watch?v=-gOFmlQP9IA)
+[![](https://raw.githubusercontent.com/8ta4/plist-media/f271d49d4c8616afcc99e5c515ca192103001507/timeline.gif)](https://youtu.be/-gOFmlQP9IA)
 
 > Why the love for `PlistBuddy` over `defaults`?
 
