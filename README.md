@@ -48,8 +48,6 @@ Unlike `defaults write`, `PlistBuddy` can handle nested preference values. But `
 
 1. Copy and paste the generated `PlistBuddy` command into your setup script.
 
-Check out [this video](https://youtu.be/XvtGb3GxfWw?t=8272) where I used the plist tool to generate a command to configure the Dock.
-
 > How can I monitor plist files that need root access?
 
 To monitor plist files that need root permission (like those in `/var/root`), use `sudo`:
